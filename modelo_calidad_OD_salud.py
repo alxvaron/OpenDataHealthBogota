@@ -26,14 +26,14 @@ def calcular_consistencia(df, columnas_unidades):
     )
     return columnas_homogeneas / total_columnas if total_columnas > 0 else 0
 
-# Función: Calcular Unicidad
-def calcular_unicidad(df):
+# Función: Calcular coherencia
+def calcular_coherencia(df):
     instancias_totales = len(df)
     instancias_repetidas = df.duplicated().sum()
     return 1 - (instancias_repetidas / instancias_totales) if instancias_totales > 0 else 1.0
 
-# Función: Calcular Valor
-def calcular_valor(df):
+# Función: Calcular actualidad
+def calcular_actualidad(df):
     df['fecha_publicacion'] = pd.to_datetime(df['fecha_publicacion'], errors='coerce')
     df['ultima_modificacion'] = pd.to_datetime(df['ultima_modificacion'], errors='coerce')
     tiempo_actual = datetime.now()
@@ -49,13 +49,13 @@ def calcular_volatilidad(df):
     df['volatilidad'] = (df['fecha_expiracion'] - df['fecha_publicacion']).dt.total_seconds() / (24 * 3600)
     return df['volatilidad'].clip(lower=0).mean()
 
-# Función: Calcular Oportunidad
-def calcular_oportunidad(df, frescura_ideal):
+# Función: Calcular puntualidad
+def calcular_puntualidad(df, frescura_ideal):
     df['ultima_modificacion'] = pd.to_datetime(df['ultima_modificacion'], errors='coerce')
     tiempo_actual = datetime.now()
     delta_modificacion = (tiempo_actual - df['ultima_modificacion']).dt.total_seconds() / (24 * 3600)
-    oportunidad = 1 - (delta_modificacion / frescura_ideal)
-    return oportunidad.clip(lower=0, upper=1).mean()
+    puntualidad = 1 - (delta_modificacion / frescura_ideal)
+    return puntualidad.clip(lower=0, upper=1).mean()
 
 # Cargar datos
 datos_prueba = pd.read_csv('datos_prueba.csv')
@@ -67,10 +67,10 @@ columnas_unidades = {'peso': 'kg', 'altura': 'cm'}
 # Calcular métricas
 precision_eval = calcular_precision(datos_bogota)
 consistencia_eval = calcular_consistencia(datos_bogota, columnas_unidades)
-unicidad_eval = calcular_unicidad(datos_bogota)
-valor_eval = calcular_valor(datos_bogota)
+coherencia_eval = calcular_coherencia(datos_bogota)
+actualidad_eval = calcular_actualidad(datos_bogota)
 volatilidad_eval = calcular_volatilidad(datos_bogota)
-oportunidad_eval = calcular_oportunidad(datos_bogota, frescura_ideal=30)
+puntualidad_eval = calcular_puntualidad(datos_bogota, frescura_ideal=30)
 
 # Preparar datos para el modelo
 X_train = datos_prueba.drop(['calidad'], axis=1)
@@ -100,13 +100,13 @@ print(f'Mean Squared Error (MSE): {mse:.4f}')
 print(f'R2 Score: {r2:.4f}')
 
 # Mostrar resultados finales
-metricas = ['precisión', 'consistencia', 'unicidad', 'valor', 'volatilidad', 
-            'oportunidad', 'completitud', 'validez', 'actualización', 'disponibilidad']
+metricas = ['precisión', 'consistencia', 'coherencia', 'actualidad', 'volatilidad', 
+            'puntualidad', 'completitud', 'validez', 'actualización', 'disponibilidad']
 
 resultados = pd.DataFrame({
     'Métrica': metricas,
-    'Valor': [precision_eval, consistencia_eval, unicidad_eval, valor_eval, 
-              volatilidad_eval, oportunidad_eval] + list(y_pred[6:])
+    'actualidad': [precision_eval, consistencia_eval, coherencia_eval, actualidad_eval, 
+              volatilidad_eval, puntualidad_eval] + list(y_pred[6:])
 })
 print('\nResultados por Métrica de Calidad:')
 print(resultados)
